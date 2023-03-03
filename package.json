@@ -9,6 +9,7 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
+	"type": "module",
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
@@ -20,5 +21,8 @@
 		"obsidian": "^1.1.1",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"langchain": "^0.0.20"
 	}
 }

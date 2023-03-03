@@ -1,16 +1,17 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
+import Langchain from './src/langchain'
 // Remember to rename these classes and interfaces!
 
 interface MyPluginSettings {
-	mySetting: string;
+	OPEN_API_KEY: string;
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+	OPEN_API_KEY: 'default'
 }
 
 export default class MyPlugin extends Plugin {
+	private langchain: Langchain;
 	settings: MyPluginSettings;
 
 	async onload() {
@@ -33,9 +34,10 @@ export default class MyPlugin extends Plugin {
 			id: 'qa',
 			name: 'Start Q&A with shadow reader',
 			callback: () => {
-				new SampleModal(this.app, (result) => {
+				new SampleModal(this.app, (question) => {
 					// 拿到输入的内容
-					new Notice(`Hello, ${result}!`);
+					this.langchain.callChain(question);
+					new Notice(`Hello, ${question}!`);
 				  }).open();
 			}
 		});
@@ -93,6 +95,7 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		this.langchain = new Langchain(this.settings.OPEN_API_KEY);
 	}
 }
 
@@ -154,10 +157,9 @@ class SampleSettingTab extends PluginSettingTab {
 			.setDesc('It\'s a openapi api key')
 			.addText(text => text
 				.setPlaceholder('Enter your api key')
-				.setValue(this.plugin.settings.mySetting)
+				.setValue(this.plugin.settings.OPEN_API_KEY)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.OPEN_API_KEY = value;
 					await this.plugin.saveSettings();
 				}));
 	}
