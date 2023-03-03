@@ -17,23 +17,26 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('dice', 'ShadowReader', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			new Notice('I am your ShawdowReader');
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		statusBarItemEl.setText('ShadowReader Bar Text');
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
+			id: 'qa',
+			name: 'Start Q&A with shadow reader',
 			callback: () => {
-				new SampleModal(this.app).open();
+				new SampleModal(this.app, (result) => {
+					// 拿到输入的内容
+					new Notice(`Hello, ${result}!`);
+				  }).open();
 			}
 		});
 		// This adds an editor command that can perform some operation on the current editor instance
@@ -56,7 +59,9 @@ export default class MyPlugin extends Plugin {
 					// If checking is true, we're simply "checking" if the command can be run.
 					// If checking is false, then we want to actually perform the operation.
 					if (!checking) {
-						new SampleModal(this.app).open();
+						new SampleModal(this.app, (result) => {
+							new Notice(`Hello, ${result}!`);
+						  }).open();
 					}
 
 					// This command will only show up in Command Palette when the check function returns true
@@ -92,18 +97,40 @@ export default class MyPlugin extends Plugin {
 }
 
 class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+	result: string;
+	onSubmit: (result: string) => void;
+  
+	constructor(app: App, onSubmit: (result: string) => void) {
+	  super(app);
+	  this.onSubmit = onSubmit;
 	}
-
+  
 	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
+	  const { contentEl } = this;
+  
+	  contentEl.createEl("h1", { text: "What's your question?" });
+  
+	  new Setting(contentEl)
+		.setName("question")
+		.addText((text) =>
+		  text.onChange((value) => {
+			this.result = value
+		  }));
+  
+	  new Setting(contentEl)
+		.addButton((btn) =>
+		  btn
+			.setButtonText("Submit")
+			.setCta()
+			.onClick(() => {
+			  this.close();
+			  this.onSubmit(this.result);
+			}));
 	}
-
+  
 	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+	  let { contentEl } = this;
+	  contentEl.empty();
 	}
 }
 
@@ -123,10 +150,10 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('OPENAI_API_KEY')
+			.setDesc('It\'s a openapi api key')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
+				.setPlaceholder('Enter your api key')
 				.setValue(this.plugin.settings.mySetting)
 				.onChange(async (value) => {
 					console.log('Secret: ' + value);
