@@ -7,5 +7,8 @@
 	"author": "zach",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"files":[
+		"config.json"
+	]
 }

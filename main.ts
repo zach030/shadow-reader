@@ -1,21 +1,20 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Remember to rename these classes and interfaces!
-
+import Langchain from './src/langchain';
 interface MyPluginSettings {
-	mySetting: string;
+	OPEN_API_KEY: string;
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+	OPEN_API_KEY: 'default'
 }
 
 export default class MyPlugin extends Plugin {
+	langchain: Langchain;
 	settings: MyPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
-
+		console.log(__dirname);
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'ShadowReader', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
@@ -33,19 +32,8 @@ export default class MyPlugin extends Plugin {
 			id: 'qa',
 			name: 'Start Q&A with shadow reader',
 			callback: () => {
-				new SampleModal(this.app, (result) => {
-					// 拿到输入的内容
-					new Notice(`Hello, ${result}!`);
-				  }).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
+				console.log("call func!!!!!")
+				this.callLangchain();
 			}
 		});
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
@@ -84,9 +72,17 @@ export default class MyPlugin extends Plugin {
 	}
 
 	onunload() {
-
+		console.log('unloading shadow-reader plugin', new Date().toLocaleString());
 	}
 
+	async callLangchain(){
+		new SampleModal(this.app, (question) => {
+			// 拿到输入的内容
+			console.log(`question is :${question}`);
+			this.langchain.callChain(this.settings.OPEN_API_KEY,question);
+			new Notice(`Hello, ${question}!`);
+		  }).open();
+	}
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
@@ -154,10 +150,10 @@ class SampleSettingTab extends PluginSettingTab {
 			.setDesc('It\'s a openapi api key')
 			.addText(text => text
 				.setPlaceholder('Enter your api key')
-				.setValue(this.plugin.settings.mySetting)
+				.setValue(this.plugin.settings.OPEN_API_KEY)
 				.onChange(async (value) => {
 					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.OPEN_API_KEY = value;
 					await this.plugin.saveSettings();
 				}));
 	}
